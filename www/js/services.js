@@ -1,5 +1,9 @@
 // Users
 angular.module('starter.services', [])
+    .factory("Auth", function ($firebaseAuth, $rootScope) {
+            var ref = new Firebase(firebaseUrl);
+            return $firebaseAuth(ref);
+    })
     .factory('User', function () {
         var users = [
             {
@@ -7,7 +11,7 @@ angular.module('starter.services', [])
                 friendType: "Messenger",
                 name: "felix",
                 face: 'img/user01.jpg',
-                email: 'hi@weburner.com',
+              //  email: 'hi@weburner.com',
                 activeTime: "Active today"
             },
             {
@@ -15,7 +19,7 @@ angular.module('starter.services', [])
                 friendType: "facebook",
                 name: "Eric",
                 face: 'img/user02.jpg',
-                email: 'hi@weburner.com',
+              //  email: 'hi@weburner.com',
                 activeTime: "Active 1h ago"
             },
             {
@@ -23,15 +27,15 @@ angular.module('starter.services', [])
                 name: "Apple",
                 friendType: "Messenger",
                 face: 'img/user03.jpg',
-                email: 'hi@weburner.com',
+            //    email: 'hi@weburner.com',
                 activeTime: "Active today"
             },
             {
-                id: "213",
+                id: "1122063a-f9f3-4dd8-9834-8ac2b881a638",
                 name: "Diamond",
                 friendType: "Messenger",
                 face: 'img/user04.jpg',
-                email: 'hi@weburner.com',
+              //  email: 'hi@weburner.com',
                 activeTime: "Active 3m ago"
             },
             {
@@ -39,7 +43,7 @@ angular.module('starter.services', [])
                 name: "Mike",
                 friendType: "facebook",
                 face: 'img/user05.jpg',
-                email: 'hi@weburner.com',
+            //    email: 'hi@weburner.com',
                 activeTime: "Active today"
             }
         ];
@@ -78,7 +82,7 @@ angular.module('starter.services', [])
                 title: "I Love Coffee",
                 members: "Felix, Eric, Diamond",
                 activeTime: "Active today",
-                userList: ["213", "1", "2"]
+                userList: ["1122063a-f9f3-4dd8-9834-8ac2b881a638", "1", "2"]
             },
             {
                 id: "room_b",
@@ -87,7 +91,7 @@ angular.module('starter.services', [])
                 title: "Go shopping",
                 members: "Eric, Apple, Diamond",
                 activeTime: "Active today",
-                userList: ["2", "3", "213"]
+                userList: ["2", "3", "1122063a-f9f3-4dd8-9834-8ac2b881a638"]
             },
             {
                 id: "room_c",
@@ -96,7 +100,7 @@ angular.module('starter.services', [])
                 title: "felix",
                 members: "Felix, Diamond",
                 activeTime: "Active 1h ago",
-                userList: ["213", "1"]
+                userList: ["1122063a-f9f3-4dd8-9834-8ac2b881a638", "1"]
             },
             {
                 id: "room_d",
@@ -105,7 +109,7 @@ angular.module('starter.services', [])
                 title: "Eric",
                 members: "Eric, Diamond",
                 activeTime: "Active 1h ago",
-                userList: ["213", "2"]
+                userList: ["1122063a-f9f3-4dd8-9834-8ac2b881a638", "2"]
             },
             {
                 id: "room_e",
@@ -114,7 +118,7 @@ angular.module('starter.services', [])
                 title: "Ionic",
                 members: "Eric, Apple, Mike, Diamond",
                 activeTime: "11:00 am",
-                userList: ["2", "3", "5", "213"]
+                userList: ["2", "3", "5", "1122063a-f9f3-4dd8-9834-8ac2b881a638"]
             },
             {
                 id: "room_f",
@@ -123,7 +127,7 @@ angular.module('starter.services', [])
                 title: "Rockers",
                 members: "felix, Eric, Diamond, Mike",
                 activeTime: "12:15 am",
-                userList: ["1", "2", "213", "5"]
+                userList: ["1", "2", "1122063a-f9f3-4dd8-9834-8ac2b881a638", "5"]
             }
         ];
         return {
