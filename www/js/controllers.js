@@ -1,16 +1,18 @@
+var firebaseUrl = "https://davids-app.firebaseio.com/";
 angular.module('starter.controllers', [])
-    .controller('MainCtrl', function ($scope, $stateParams, User, $ionicModal, Room, $location, $rootScope, $ionicPopup) {
+    .controller('MainCtrl', function ($scope,$timeout, $stateParams, $rootScope,$ionicLoading,$firebaseObject,Auth,User, $ionicModal, Room, $location, $rootScope, $ionicPopup) {
         $scope.historyBack = function () {
             window.history.back();
         };
+        $timeout(function() {
+        console.log($rootScope.currentUserID);
 
-        $scope.friends = User.myFriends("213");
-        $scope.activities = Room.userActivities("213");
+        $scope.friends = User.myFriends($rootScope.currentUserID);
+        $scope.activities = Room.userActivities($rootScope.currentUserID);
 
         // for tab-account and sign-up-success
-        $scope.user = User.get("213");
-
-
+        $scope.user = User.get($rootScope.currentUserID);
+      }, 650);
         // for new-group
         $rootScope.newGroupName = '';
         $scope.createNewGroup = function (groupName) {
@@ -140,8 +142,16 @@ angular.module('starter.controllers', [])
         });
     })
 
-    .controller('ActivitiesCtrl', function ($scope, Room, User) {
-        $scope.activities = Room.userActivities("213");
+    .controller('ActivitiesCtrl', function ($scope,$timeout,$rootScope, Room, User) {
+
+      $timeout(function() {
+    console.log($rootScope.displayName);
+      $scope.eventTitle = $rootScope.displayName+ "s' Events";
+      console.log($rootScope.currentUserID);
+  }, 650);
+      //console.log($rootScope.displayName);
+        //$scope.eventTitle =  " Events";
+        $scope.activities = Room.userActivities($rootScope.currentUserID);
 
         $scope.remove = function (item) {
             Room.remove(item);
@@ -150,7 +160,10 @@ angular.module('starter.controllers', [])
         $scope.friends = User;
     })
 
-    .controller('RoomCtrl', function ($scope, $stateParams, Room, Chat) {
+    .controller('RoomCtrl', function ($scope,$rootScope,$timeout, $stateParams, Room, Chat) {
+      $timeout(function() {
+      console.log($rootScope.currentUserID);
+    }, 650);
         if ($stateParams.roomId == "new") {
             if ($stateParams.userList) {
                 $scope.room = Room.newGroup($stateParams.groupName, $stateParams.userList);
@@ -161,7 +174,7 @@ angular.module('starter.controllers', [])
             }
         }
         else {
-            $scope.room = Room.get($stateParams.roomId);
+            $scope.room = Room.get($rootScope.currentUserID);
             $scope.room.settingURL = "#/room-setting/" + $stateParams.roomId;
         }
 
@@ -169,7 +182,7 @@ angular.module('starter.controllers', [])
 
 
         $scope.sendChat = function (chatText) {
-            Chat.add(chatText, $stateParams.roomId, "213");
+            Chat.add(chatText, $stateParams.roomId, $rootScope.currentUserID);
             $scope.chatList = Chat.getByRoom($stateParams.roomId);
             reply();
 
@@ -178,7 +191,7 @@ angular.module('starter.controllers', [])
         var reply = function () {
             var userId;
             for (var i = 0; i < $scope.room.userList.length; i++) {
-                if ($scope.room.userList[i] != "213") {
+                if ($scope.room.userList[i] != $rootScope.currentUserID) {
                     userId = $scope.room.userList[i];
                 }
             }
@@ -189,13 +202,13 @@ angular.module('starter.controllers', [])
 
     })
 
-    .controller('GroupsCtrl', function ($scope, Room) {
-        $scope.groupRow = Room.allGroups("213", 2);
+    .controller('GroupsCtrl', function ($scope, $rootScope,Room) {
+        $scope.groupRow = Room.allGroups($rootScope.currentUserID, 2);
     })
 
-    .controller('FriendsCtrl', function ($scope, $stateParams, $ionicPopup, User, Room, $state) {
+    .controller('FriendsCtrl', function ($scope, $rootScope,$stateParams, $ionicPopup, User, Room, $state) {
         $scope.$state = $state;
-        $scope.friends = User.myFriends("213");
+        $scope.friends = User.myFriends($rootScope.currentUserID);
 
 
         for (var i in $scope.friends) {
@@ -222,7 +235,12 @@ angular.module('starter.controllers', [])
         }
     })
 
-    .controller('AccountCtrl', function ($scope, $ionicActionSheet, $ionicModal) {
+    .controller('AccountCtrl', function ($scope,$rootScope, $ionicActionSheet, $ionicModal, Auth) {
+        //logout function
+        $scope.logout = function() {
+          Auth.$unauth();
+        };
+
         $scope.showNotification = function () {
 
             $ionicActionSheet.show({
@@ -295,7 +313,7 @@ angular.module('starter.controllers', [])
         };
     })
 
-    .controller('RoomSettingCtrl', function ($scope, $ionicActionSheet, $stateParams, $ionicPopup, Room) {
+    .controller('RoomSettingCtrl', function ($scope, $rootScope,$ionicActionSheet, $stateParams, $ionicPopup, Room) {
         if ($stateParams.roomId == "new") {
             if ($stateParams.userList) {
                 $scope.room = Room.newGroup($stateParams.groupName, $stateParams.userList);
@@ -348,7 +366,7 @@ angular.module('starter.controllers', [])
         };
     })
 
-    .controller('UserSettingCtrl', function ($scope, $stateParams, $ionicPopup, User) {
+    .controller('UserSettingCtrl', function ($scope, $rootScope, $stateParams, $ionicPopup, User) {
         $scope.user = User.get($stateParams.userId);
 
         // A confirm
@@ -379,4 +397,78 @@ angular.module('starter.controllers', [])
         $scope.b2 = function() {
             console.log("B2");
         };
-    });
+    })
+
+    .controller('loginCtrl', function ($scope,   $state,$rootScope, $ionicModal, Auth) {
+
+      var ref = new Firebase($scope.firebaseUrl);
+      $scope.user = {};
+      console.log($rootScope.lol);
+      $scope.login = function(user) {
+        console.log(user);
+        Auth.$authWithPassword({
+          email: user.email,
+          password: user.pass
+        }).then(function(authData) {
+          console.log(authData);
+          console.log('Logged in successfully as: ', authData.uid);
+          $rootScope.currentUserID = authData.uid;
+          ref.child("users").child(authData.uid).once('value', function (snapshot) {
+            var val = snapshot.val();
+            // To Update AngularJS $scope either use $apply or $timeout
+            $scope.$apply(function () {
+              $rootScope.displayName = val.displayName;
+              console.log(  $rootScope.displayName);
+            });
+          });
+          $state.go("tab.activities");
+        //  $scope.loggedInUser = authData;
+        }).catch(function(error) {
+          console.log('Error: ', error);
+        });
+      };
+      })
+
+      .controller('signupCtrl', function ($scope,$ionicLoading,$state, $rootScope, $ionicModal, Auth) {
+
+        var ref = new Firebase($scope.firebaseUrl);
+        $scope.user = {};
+        $rootScope.createUser = function(user) {
+          if (user && user.email && user.password && user.displayname) {
+            $ionicLoading.show({
+              template: 'Signing Up...'
+            });
+
+            Auth.$createUser({
+              email: user.email,
+              password: user.password
+            }).then(function (userData) {
+              console.log(userData);
+              alert("User created successfully!");
+              Auth.$authWithPassword({
+                email: user.email,
+                password: user.password
+              }).then(function(authData) {
+                console.log(authData);
+                console.log('Logged in successfully as: ', authData.uid);
+                ref.child("users").child(userData.uid).set({
+                  email: user.email,
+                  displayName: user.displayname
+                });
+                $rootScope.currentUserID = authData.uid;
+                $rootScope.displayName = user.displayname;
+              }).catch(function(error) {
+                console.log('Error: ', error);
+              });
+              $ionicLoading.hide();
+              $state.go('tab.activities');
+            }).catch(function (error) {
+              alert("Error: " + error);
+              $ionicLoading.hide();
+            });
+          } else
+          alert("Please fill all details");
+        };
+
+
+      });
