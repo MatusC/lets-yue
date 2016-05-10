@@ -1,32 +1,72 @@
 // Ionic Starter App
 
+var firebaseUrl = "https://davids-app.firebaseio.com/";
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
+angular.module('starter', ['ionic', 'firebase', 'starter.controllers', 'starter.services'])
 
-    .run(function ($ionicPlatform, $rootScope) {
+    .run(function ($ionicPlatform, $rootScope,$firebaseObject, $location,$state, Auth, $ionicLoading) {
         $ionicPlatform.ready(function () {
             // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
             // for form inputs)
             if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
                 cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
                 cordova.plugins.Keyboard.disableScroll(true);
-
             }
             if (window.StatusBar) {
                 // org.apache.cordova.statusbar required
                 StatusBar.styleLightContent();
             }
-        });
 
-        $rootScope.currentUserID = 213;
+            ionic.Platform.fullScreen();
+
+            var ref = new Firebase(firebaseUrl);
+
+            $rootScope.firebaseUrl = firebaseUrl;
+            $rootScope.displayName = null;
+
+
+            Auth.$onAuth(function (authData) {
+            if (authData) {
+                console.log("Logged in as:", authData.uid);
+                $rootScope.currentUserID = authData.uid;
+                ref.child("users").child(authData.uid).once('value', function (snapshot) {
+                  var val = snapshot.val();
+                  // To Update AngularJS $scope either use $apply or $timeout
+                    $rootScope.displayName = val.displayName;
+                    console.log(  $rootScope.displayName);
+                });
+                $state.go('tab.activities');
+            } else {
+                console.log("Logged out");
+                $ionicLoading.hide();
+                $location.path('/login');
+            }
+        });
+        $rootScope.logout = function () {
+          console.log("Logging out from the app");
+          $ionicLoading.show({
+            template: 'Logging Out...'
+          });
+          Auth.$unauth();
+        }
+
+        $rootScope.$on("$stateChangeError", function (event, toState, toParams, fromState, fromParams, error) {
+          // We can catch the error thrown when the $requireAuth promise is rejected
+          // and redirect the user back to the home page
+          if (error === "AUTH_REQUIRED") {
+            $location.path("/login");
+          }
+        });
+      });
     })
 
-    .config(function ($stateProvider, $urlRouterProvider) {
+    .config(function ($stateProvider, $urlRouterProvider,$ionicConfigProvider) {
 
+      $ionicConfigProvider.tabs.position('bottom'); //bottom
         // Ionic uses AngularUI Router which uses the concept of states
         // Learn more here: https://github.com/angular-ui/ui-router
         // Set up the various states which the app can be in.
@@ -37,8 +77,18 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
             .state('tab', {
                 url: '/tab',
                 abstract: true,
-                templateUrl: 'templates/tabs.html'
-            })
+                templateUrl: 'templates/tabs.html',
+                controller: 'MainCtrl',
+                resolve: {
+                  // controller will not be loaded until $waitForAuth resolves
+                  // Auth refers to our $firebaseAuth wrapper in the example above
+                  "currentAuth": ["Auth",
+                  function (Auth) {
+                    // $waitForAuth returns a promise so the resolve waits for it to complete
+                    return Auth.$waitForAuth();
+                  }]
+                }
+              })
 
             // Each tab has its own nav history stack:
 
@@ -135,11 +185,31 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
             // All templates about user
             .state('login', {
                 url: '/login',
-                templateUrl: 'templates/login.html'
+                templateUrl: 'templates/login.html',
+                controller: 'loginCtrl',
+                resolve: {
+                  // controller will not be loaded until $waitForAuth resolves
+                  // Auth refers to our $firebaseAuth wrapper in the example above
+                  "currentAuth": ["Auth",
+                  function (Auth) {
+                    // $waitForAuth returns a promise so the resolve waits for it to complete
+                    return Auth.$waitForAuth();
+                  }]
+                }
             })
             .state('sign-up', {
                 url: '/sign-up',
-                templateUrl: 'templates/sign-up.html'
+                templateUrl: 'templates/sign-up.html',
+                controller: 'signupCtrl',
+                resolve: {
+                  // controller will not be loaded until $waitForAuth resolves
+                  // Auth refers to our $firebaseAuth wrapper in the example above
+                  "currentAuth": ["Auth",
+                  function (Auth) {
+                    // $waitForAuth returns a promise so the resolve waits for it to complete
+                    return Auth.$waitForAuth();
+                  }]
+                }
             })
             .state('sign-up-name', {
                 url: '/sign-up-name',
@@ -162,4 +232,3 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
         $urlRouterProvider.otherwise('/login');
 
     });
-

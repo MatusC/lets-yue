@@ -10,21 +10,29 @@
 
         <ion-list class="border-none">
             <ion-item class="item-input border-bottom">
-                <input type="email" placeholder="Email">
+                <input type="email" placeholder="Email" ng-model="user.email">
             </ion-item>
             <ion-item class="item-input border-bottom">
-                <input type="password" placeholder="Password">
+                <input type="password" placeholder="Password"  ng-model="user.pass">
             </ion-item>
         </ion-list>
         <div class="padding">
-            <a class="button button-clear button-large" href="#/tab/activities">
+            <a class="button button-clear button-large" ng-click="login(user)">
                 Continue
             </a>
         </div>
+        <div class="button-bar social-login">
+          <button class="button button-small button-border icon-left ion-social-google button-assertive-900" style="border-radius: 100px 0px 0px 100px;    background-color: #B71C1C;
+    color: #fff;">Google+</button>
+          <button class="button button-small button-border icon-left ion-social-twitter button-calm-900" style="background-color: #0D47A1;
+    color: #fff;">Twitter</button>
+          <button class="button button-small button-border icon-left ion-social-facebook button-positive-900" style="border-radius: 0px 100px 100px 0px;    background-color: #1A237E;
+    color: #fff;">Facebook</button>
+      </div>
     </ion-content>
 
     <ion-footer-bar>
-        <a class="button button-clear" href="#/sign-up">Sign Up</a>
+        <a class="button button-clear" ui-sref="sign-up">Sign Up</a>
         <a class="button button-clear" href="#/forgot-password">Forgot Password</a>
     </ion-footer-bar>
 </ion-view>
