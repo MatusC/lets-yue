@@ -402,10 +402,33 @@ angular.module('starter.controllers', [])
     .controller('loginCtrl', function ($scope,   $state,$rootScope, $ionicModal, Auth) {
 
       var ref = new Firebase($scope.firebaseUrl);
+      //$scope.db = ref;
       $scope.user = {};
-      console.log($rootScope.lol);
+      // console.log($rootScope.lol);
+
+      // Authenticate With Facebook
+      $scope.authWithFacebook = function() {
+        ref.authWithOAuthPopup("facebook", function(error, authData) {
+          if (error) {
+            console.log("Log in failed due to: ", error);
+          }
+          else {
+            console.log("Logged in as" + authData.facebook.displayName);
+            ref.child("users").child(authData.uid).set({
+              email: null,
+              displayName: authData.facebook.displayName
+            });
+            $rootScope.currentUserID = authData.uid;
+            $rootScope.displayName = authData.facebook.displayName;
+            console.log($rootScope.displayName);
+            $state.go("tab.activities");
+          }
+        })
+      } // End of loginFB
+      
+      // Custom login (email)
       $scope.login = function(user) {
-        console.log(user);
+        // console.log(user);
         Auth.$authWithPassword({
           email: user.email,
           password: user.pass
@@ -427,6 +450,7 @@ angular.module('starter.controllers', [])
           console.log('Error: ', error);
         });
       };
+
       })
 
       .controller('signupCtrl', function ($scope,$ionicLoading,$state, $rootScope, $ionicModal, Auth) {
