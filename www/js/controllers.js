@@ -5,14 +5,14 @@ angular.module('starter.controllers', [])
             window.history.back();
         };
         $timeout(function() {
-        console.log($rootScope.currentUserID);
+          console.log($rootScope.currentUserID);
 
-        $scope.friends = User.myFriends($rootScope.currentUserID);
-        $scope.activities = Room.userActivities($rootScope.currentUserID);
+          $scope.friends = User.myFriends($rootScope.currentUserID);
+          $scope.activities = Room.userActivities($rootScope.currentUserID);
 
-        // for tab-account and sign-up-success
-        $scope.user = User.get($rootScope.currentUserID);
-      }, 650);
+          // for tab-account and sign-up-success
+          $scope.user = User.get($rootScope.currentUserID);
+        }, 650);
         // for new-group
         $rootScope.newGroupName = '';
         $scope.createNewGroup = function (groupName) {
@@ -174,7 +174,7 @@ angular.module('starter.controllers', [])
             }
         }
         else {
-            $scope.room = Room.get($rootScope.currentUserID);
+            $scope.room = Room.get($stateParams.roomId);
             $scope.room.settingURL = "#/room-setting/" + $stateParams.roomId;
         }
 
@@ -182,7 +182,7 @@ angular.module('starter.controllers', [])
 
 
         $scope.sendChat = function (chatText) {
-            Chat.add(chatText, $stateParams.roomId, $rootScope.currentUserID);
+            Chat.add(chatText, $stateParams.roomId,"");
             $scope.chatList = Chat.getByRoom($stateParams.roomId);
             reply();
 
@@ -399,10 +399,28 @@ angular.module('starter.controllers', [])
         };
     })
 
-    .controller('loginCtrl', function ($scope,   $state,$rootScope, $ionicModal, Auth) {
+    .controller('loginCtrl', function ($scope, $firebaseAuth, $state,$rootScope, $ionicModal, Auth) {
 
       var ref = new Firebase($scope.firebaseUrl);
       $scope.user = {};
+      $scope.authWithGoogle = function(){
+        ref.authWithOAuthPopup("google", function(error, authData) {
+          if (error) {
+            console.log("Login Failed!", error);
+          } else {
+            console.log("Authenticated successfully with payload:", authData);
+            console.log(authData.google.displayName);
+            ref.child("users").child(authData.uid).set({
+              email: null,
+              displayName: authData.google.displayName
+            });
+            $rootScope.currentUserID = authData.uid;
+            $rootScope.displayName = authData.google.displayName;
+            console.log($rootScope.displayName);
+            $state.go("tab.activities");
+          }
+        });
+      };
       console.log($rootScope.lol);
       $scope.login = function(user) {
         console.log(user);
