@@ -405,6 +405,26 @@ angular.module('starter.controllers', [])
       //$scope.db = ref;
       $scope.user = {};
 
+      //login with twitter
+      $scope.authWithtwitter=function(){
+        ref.authWithOAuthPopup("twitter", function(error, authData) {
+          if (error) {
+            console.log("Login Failed!", error);
+          } else {
+            console.log("Authenticated successfully with payload:", authData);
+            console.log(authData.twitter.displayName);
+            ref.child("users").child(authData.uid).set({
+              email: null,
+              displayName: authData.twitter.displayName
+            });
+            $rootScope.currentUserID = authData.uid;
+            $rootScope.displayName = authData.twitter.displayName;
+            console.log($rootScope.displayName);
+            $state.go("tab.activities");
+          }
+        })
+      } // End of Auth with twitter
+
       // Authenticate With Facebook
       $scope.authWithFacebook = function() {
         ref.authWithOAuthPopup("facebook", function(error, authData) {
